@@ -16,25 +16,29 @@ def get_schrodinger_eigen(g, V, sigma, numeigs, l, method):
     avec moment angulaire l. Sigma est une approximation du bas du
     spectre.
     '''
+    params = g.fem_params(l)
     
     # Matrices FEM
     Delta,Mass = g.fem_mats(l)
     
     # Formation du hamiltonien
-    Vop = g.fem_mult_op(V,l,Mass)
-    H = Delta + Vop
-    if (g.d == 2 and l == 0):
+    H = Delta
+    if params['phi']:
+        Vl = (l+(g.d-1)/2)*(l+(g.d-3)/2) * g.x**(-2)
+        Vlop = g.fem_mult_op(Vl,l,Mass)
+        # Vlop = (l+(g.d-1)/2)*(l+(g.d-3)/2) * g.fem_overxsquare_op()
+        H = H + Vlop
+    else:
         #shift V
         V0 = extrap(0,g.x,V)
 
         V = np.roll(V,1)
         V[0] = V[1]
         V[0] = V0
-    elif g.radial:
-        Vl = (l+(g.d-1)/2)*(l+(g.d-3)/2) * g.x**(-2)
-        Vlop = g.fem_mult_op(Vl,l,Mass)
-        H = H + Vlop
 
+    Vop = g.fem_mult_op(V,l,Mass)
+    H = H + Vop
+    
     # Diagonalisation
     if method == 'eigsh':
         w,v = scipy.sparse.linalg.eigsh(H,numeigs,sigma=sigma,which='LM',M=Mass)
@@ -49,27 +53,26 @@ def get_schrodinger_eigen(g, V, sigma, numeigs, l, method):
         needmore = 0
     elif method == 'lobpcg':
         X = np.random.rand(len(V),numeigs)
-        w,v = scipy.sparse.linalg.lobpcg(H + tridiag(len(V),0,sigma,0),X,largest=False,verbosityLevel=1)
+        w,v = scipy.sparse.linalg.lobpcg(H + tridiag(len(V),0,sigma,0),X,largest=False,verbosityLevel=1,maxiter=800)
         w = w - sigma
         print w
         needmore = w[-1] < 0
 
+        
     # Changement de variable
     for i in range(0,len(w)):
-        if g.radial and not (g.d == 2 and l == 0):
+        if params['phi']:
             phi = v[:,i]
             psi = phi_to_psi(g,phi)
-        elif (g.d == 2 and l == 0):
+        else:
             psi = np.roll(v[:,i],-1)
             psi[-1] = psi[-2]
-        else:
-            psi = v[:,i]
+            # psi = v[:,i]
         # print "Norm by mass matrix", np.dot(psi, Mass * psi)
         # print "Norm by compute_lp", compute_lp(g,psi,2) / np.sqrt(surf_nsphere(2))
         v[:,i] = psi / compute_lp(g,psi,2)
 
         v[:,i] = v[:,i] * np.sign(v[2,i]) # force positive sign
-
 
     return w,v,needmore
 
@@ -142,40 +145,40 @@ def compute_lp(g,V,p):
     """Compute the lp norm of V"""
     Vs = np.abs(V)
 
-    if g.radial and (g.d <= 3):
-        sumpow = 0
-        h = g.delta
-        V = Vs[:-1]
-        dV = Vs[1:] - V
-        r = g.x[:-1]
-        special_ind = np.abs(dV) < 1e-10
-        normal_ind = np.abs(dV) >= 1e-10
-        integrands = np.zeros_like(V)
-        if g.d == 1:
-            integrands[special_ind] = V[special_ind]**p * h
-        elif g.d == 2:
-            integrands[special_ind] = V[special_ind]**p * h * (g.x[special_ind] + h/2)
-        elif g.d == 3:
-            integrands[special_ind] = V[special_ind]**p * h * (g.x[special_ind]**2 + g.x[special_ind]*h + h**2/3)
+    # if g.radial and (g.d <= 3):
+    #     sumpow = 0
+    #     h = g.delta
+    #     V = Vs[:-1]
+    #     dV = Vs[1:] - V
+    #     r = g.x[:-1]
+    #     special_ind = np.abs(dV) < 1e-10
+    #     normal_ind = np.abs(dV) >= 1e-10
+    #     integrands = np.zeros_like(V)
+    #     if g.d == 1:
+    #         integrands[special_ind] = V[special_ind]**p * h
+    #     elif g.d == 2:
+    #         integrands[special_ind] = V[special_ind]**p * h * (g.x[special_ind] + h/2)
+    #     elif g.d == 3:
+    #         integrands[special_ind] = V[special_ind]**p * h * (g.x[special_ind]**2 + g.x[special_ind]*h + h**2/3)
             
-        V = V[normal_ind]
-        dV = dV[normal_ind]
-        r = r[normal_ind]
-        # de maple
-        if g.d == 1:
-            integrands[normal_ind] = h * (-V ** (p + 1) + (V + dV) ** p * V + (V + dV) ** p * dV) / dV / (p + 1)
-        elif g.d == 2:
-            integrands[normal_ind] = -h * (V ** (p + 1) * p * dV * r - V ** (p + 2) * h + 2 * V ** (p + 1) * r * dV - (V + dV) ** p * V * p * dV * r - (V + dV) ** p * V * p * dV * h - 2 * (V + dV) ** p * V * r * dV + (V + dV) ** p * V ** 2 * h - (V + dV) ** p * dV ** 2 * p * r - (V + dV) ** p * dV ** 2 * p * h - 2 * (V + dV) ** p * dV ** 2 * r - (V + dV) ** p * dV ** 2 * h) / dV ** 2 / (p ** 2 + 3 * p + 2)
-        elif g.d == 3:
-            integrands[normal_ind] = h * (2 * (V + dV) ** p * V ** 3 * h ** 2 + 2 * (V + dV) ** p * dV ** 3 * h ** 2 + 6 * (V + dV) ** p * dV ** 3 * r ** 2 + (V + dV) ** p * V * p ** 2 * dV ** 2 * r ** 2 + (V + dV) ** p * V * h ** 2 * p ** 2 * dV ** 2 + (V + dV) ** p * V * h ** 2 * p * dV ** 2 - 2 * (V + dV) ** p * V ** 2 * h ** 2 * dV * p - 6 * (V + dV) ** p * V ** 2 * r * h * dV + 5 * (V + dV) ** p * V * p * dV ** 2 * r ** 2 + 2 * (V + dV) ** p * dV ** 3 * h * p ** 2 * r + 8 * (V + dV) ** p * dV ** 3 * h * p * r + 2 * V ** (p + 2) * h * p * dV * r + 3 * (V + dV) ** p * dV ** 3 * h ** 2 * p + 5 * (V + dV) ** p * dV ** 3 * p * r ** 2 + 6 * (V + dV) ** p * dV ** 3 * h * r + 6 * V ** (p + 2) * r * h * dV - 5 * V ** (p + 1) * p * dV ** 2 * r ** 2 - 6 * V ** (p + 1) * dV ** 2 * r ** 2 - 2 * V ** (p + 3) * h ** 2 - V ** (p + 1) * p ** 2 * dV ** 2 * r ** 2 + 2 * (V + dV) ** p * V * h * dV ** 2 * p ** 2 * r - 2 * (V + dV) ** p * V ** 2 * h * p * dV * r + 6 * (V + dV) ** p * V * h * p * dV ** 2 * r + (V + dV) ** p * dV ** 3 * h ** 2 * p ** 2 + 6 * (V + dV) ** p * V * dV ** 2 * r ** 2 + (V + dV) ** p * dV ** 3 * p ** 2 * r ** 2) / dV ** 3 / (p + 3) / (p + 2) / (p + 1)
+    #     V = V[normal_ind]
+    #     dV = dV[normal_ind]
+    #     r = r[normal_ind]
+    #     # de maple
+    #     if g.d == 1:
+    #         integrands[normal_ind] = h * (-V ** (p + 1) + (V + dV) ** p * V + (V + dV) ** p * dV) / dV / (p + 1)
+    #     elif g.d == 2:
+    #         integrands[normal_ind] = -h * (V ** (p + 1) * p * dV * r - V ** (p + 2) * h + 2 * V ** (p + 1) * r * dV - (V + dV) ** p * V * p * dV * r - (V + dV) ** p * V * p * dV * h - 2 * (V + dV) ** p * V * r * dV + (V + dV) ** p * V ** 2 * h - (V + dV) ** p * dV ** 2 * p * r - (V + dV) ** p * dV ** 2 * p * h - 2 * (V + dV) ** p * dV ** 2 * r - (V + dV) ** p * dV ** 2 * h) / dV ** 2 / (p ** 2 + 3 * p + 2)
+    #     elif g.d == 3:
+    #         integrands[normal_ind] = h * (2 * (V + dV) ** p * V ** 3 * h ** 2 + 2 * (V + dV) ** p * dV ** 3 * h ** 2 + 6 * (V + dV) ** p * dV ** 3 * r ** 2 + (V + dV) ** p * V * p ** 2 * dV ** 2 * r ** 2 + (V + dV) ** p * V * h ** 2 * p ** 2 * dV ** 2 + (V + dV) ** p * V * h ** 2 * p * dV ** 2 - 2 * (V + dV) ** p * V ** 2 * h ** 2 * dV * p - 6 * (V + dV) ** p * V ** 2 * r * h * dV + 5 * (V + dV) ** p * V * p * dV ** 2 * r ** 2 + 2 * (V + dV) ** p * dV ** 3 * h * p ** 2 * r + 8 * (V + dV) ** p * dV ** 3 * h * p * r + 2 * V ** (p + 2) * h * p * dV * r + 3 * (V + dV) ** p * dV ** 3 * h ** 2 * p + 5 * (V + dV) ** p * dV ** 3 * p * r ** 2 + 6 * (V + dV) ** p * dV ** 3 * h * r + 6 * V ** (p + 2) * r * h * dV - 5 * V ** (p + 1) * p * dV ** 2 * r ** 2 - 6 * V ** (p + 1) * dV ** 2 * r ** 2 - 2 * V ** (p + 3) * h ** 2 - V ** (p + 1) * p ** 2 * dV ** 2 * r ** 2 + 2 * (V + dV) ** p * V * h * dV ** 2 * p ** 2 * r - 2 * (V + dV) ** p * V ** 2 * h * p * dV * r + 6 * (V + dV) ** p * V * h * p * dV ** 2 * r + (V + dV) ** p * dV ** 3 * h ** 2 * p ** 2 + 6 * (V + dV) ** p * V * dV ** 2 * r ** 2 + (V + dV) ** p * dV ** 3 * p ** 2 * r ** 2) / dV ** 3 / (p + 3) / (p + 2) / (p + 1)
             
-        sumpow = sum(integrands) * surf_nsphere(g.d)
-    elif g.radial:
-        sumpow = g.delta * np.sum(Vs**p * g.ds)
-    else:
-        sumpow = g.delta**g.d * np.sum(Vs**p)
-        
-    # sumpow = g.delta * np.sum(Vs**p * g.ds)
+    #     sumpow = sum(integrands) * surf_nsphere(g.d)
+    # elif g.radial:
+    #     sumpow = g.delta * np.sum(Vs**p * g.ds)
+    # else:
+    #     sumpow = g.delta**g.d * np.sum(Vs**p)
+
+    sumpow = np.sum(g.delta* Vs**p * g.ds)
     
     return sumpow ** (1/p)
 
@@ -216,6 +219,7 @@ def translate(g,V):
 def scf(g,Vinit,gamma,maxiter,tol, sigma):
     Vs = [Vinit]
     rhos = []
+    Cs = []
     V = Vinit
     prevC = 0
     # eigs = [-1000/(g.L**2)]
@@ -236,17 +240,17 @@ def scf(g,Vinit,gamma,maxiter,tol, sigma):
 
         print "Résidu %s" %res
         C = sum(abs(eigs)**gamma) / classical_lt(gamma,g.d)
+        Cs.append(C)
         print "C", C
         print "deltaC", C - prevC
         if C - prevC < 0:
             print "ATTENTION, ENERGIE DECROISSANTE"
-            # break
-        prevC = sum(abs(eigs)**gamma) / classical_lt(gamma,g.d)
-        if res < tol:
+        elif np.abs(C - prevC) < tol:
             break
+        prevC = sum(abs(eigs)**gamma) / classical_lt(gamma,g.d)
         print ''
 
-    return V,rho,eigs,Vs,rhos,psiss
+    return V,rho,eigs,Vs,rhos,psiss, np.array(Cs)
 
 def plot_radial(g,V):
     plot(g.onedgrid[g.N/2:],V.reshape(g.x.shape)[g.N/2,g.N/2:])

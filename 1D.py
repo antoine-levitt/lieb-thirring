@@ -9,29 +9,33 @@ reload(functions)
 from functions import *
 import grid
 reload(grid)
+import extrapolation
+reload(extrapolation)
 
-Lgamma = []
+Cgamma = []
 gammas = np.linspace(1.2,1.25,3)
-gammas = np.array([1.2])
+gammas = np.array([1.167])
 #gammas = np.linspace(.84,1,5)
-maxiter = 1
-tol = 1e-4
-sigma = -.005
+maxiter = 40
+tol = 1e-10
+sigma = -.1
 
 d = 2
-L = 50
+L = 100
 Vinit_size = 5
 h = 0.1
 # N = int(L / h)
-# N = 8000
-# N = 10
-N = 5000
-radial = True
+# N = 800
+# q optimal pour singularité r^a : 5/(1+2*a)
+# N = 8208
+N = 800
+q = 2
 init = 'gauss'
 # init = 'prev_scaled'
 # init = 'harm'
 
-g = grid.Grid(N,L,d,radial)
+g = grid.Grid(N,L,d,q)
+N = g.N
 
 if init == 'prev':
     Vinit = np.interp(g.x, prev_g.x, V,right=0)
@@ -45,10 +49,15 @@ elif init == 'harm':
     Vinit[Vinit > 0] = 0
 elif init == 'constant':
     Vinit = -np.ones_like(g.x)
+elif init == 'linear':
+    Vinit = (g.x-L/2)
+    Vinit[Vinit > 0] = 0
 else:
     raise Error('init invalide')
 
-V = Vinit / compute_lp(g,Vinit,gammas[0]+d/2)
+
+Vinit = Vinit / compute_lp(g,Vinit,gammas[0]+d/2)
+V = Vinit
 Vgammas = []
 psiss = []
 for gamma in gammas:
@@ -56,13 +65,15 @@ for gamma in gammas:
         print
         print "********** Calcul avec gamma = ", gamma, "************"
         print
-    V,rho,eigs,Vs,rhos,psiss = scf(g,V,gamma,maxiter=maxiter,tol=tol,sigma=sigma)
+    V,rho,eigs,Vs,rhos,psiss,Cs = scf(g,V,gamma,maxiter=maxiter,tol=tol,sigma=sigma)
     sigma = eigs[0]
-    Lgamma.append(sum(abs(eigs)**gamma))
+    Rs,rs = extrapolation.richardson(Cs)
+    Cgamma.append(Cs[-1])
     Vgammas.append(V)
 
+    print "Calcul fini, Richardson dit", Rs[-1]
 
-Cgamma = np.array(Lgamma) / classical_lt(gammas,d)
+Cgamma = np.array(Cgamma)
 
 # plot(gammas,Cgamma)
 
@@ -78,6 +89,7 @@ if(len(Cgamma) > 1):
 
     figure()
     plot(gammasextr,Cgammaextr)
+    plot(gammas,Cgamma,'x')
     show()
 
 # figure()
@@ -87,12 +99,12 @@ if(len(Cgamma) > 1):
 # title ("V")
 
 psis = psiss[-1]
+psi = psis[:,0]
+phi = functions.psi_to_phi(g,psi)
 
-# figure()
-# plot(g.x,psis)
-# show()
-
-print radial_stddev(g,V)
+figure()
+plot(g.x,psis,'-x')
+show()
 
 prev_g = g
 
