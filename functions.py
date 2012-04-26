@@ -8,7 +8,9 @@ import scipy.sparse
 import scipy.integrate
 import scipy.sparse.linalg
 import scipy.ndimage.measurements
-import primme_inter
+# import primme_inter
+# import feast_inter
+# reload(feast_inter)
 from matplotlib.pyplot import *
 
 def get_schrodinger_eigen(g, V, sigma, numeigs, l, method):
@@ -16,6 +18,9 @@ def get_schrodinger_eigen(g, V, sigma, numeigs, l, method):
     avec moment angulaire l. Sigma est une approximation du bas du
     spectre.
     '''
+    global v0s
+    if not globals().has_key('v0s'):
+        v0s = {}
     params = g.fem_params(l)
     
     # Matrices FEM
@@ -38,10 +43,27 @@ def get_schrodinger_eigen(g, V, sigma, numeigs, l, method):
 
     Vop = g.fem_mult_op(V,l,Mass)
     H = H + Vop
+
+    method = 'eigsh'
     
     # Diagonalisation
     if method == 'eigsh':
+        # if v0s.has_key(l):
+        #     v0 = v0s[l][:,0]
+        #     if v0.shape[0] != len(V):
+        #         v0 = None
+        # else:
+        #     v0 = None
         w,v = scipy.sparse.linalg.eigsh(H,numeigs,sigma=sigma,which='LM',M=Mass)
+        v0s[l] = v
+        needmore = w[-1] < 0
+    elif method == 'eigsh_banded':
+        Hb = tridiag_to_banded(g,H)
+        Mb = tridiag_to_banded(g,Mass)
+        Hshifted = Hb-sigma*Mb
+        funcinv = lambda b : scipy.linalg.solve_banded((1, 1), Hshifted, b)
+        Opinv = scipy.sparse.linalg.LinearOperator((V.shape[0], V.shape[0]), funcinv)
+        w,v = scipy.sparse.linalg.eigsh(H,numeigs,sigma=sigma,which='LM',M=Mass,OPinv = Opinv)
         needmore = w[-1] < 0
     if method == 'primme':
         w,v = primme_inter.solve_eigen(H,numeigs,Mass)
@@ -53,10 +75,15 @@ def get_schrodinger_eigen(g, V, sigma, numeigs, l, method):
         needmore = 0
     elif method == 'lobpcg':
         X = np.random.rand(len(V),numeigs)
-        w,v = scipy.sparse.linalg.lobpcg(H + tridiag(len(V),0,sigma,0),X,largest=False,verbosityLevel=1,maxiter=800)
+        w,v = scipy.sparse.linalg.lobpcg(H + tridiag(len(V),0,sigma,0),X,largest=False,verbosityLevel=0,maxiter=800)
         w = w - sigma
         print w
         needmore = w[-1] < 0
+    elif method == 'feast':
+        #w,v = feast_inter.solve_eigen(H,Mass, sigma, 0)
+        w,v = feast_inter.solve_eigen(H,Mass, -1, 0, 5)
+        v0s[l] = v
+        needmore = 0
 
         
     # Changement de variable
@@ -78,17 +105,27 @@ def get_schrodinger_eigen(g, V, sigma, numeigs, l, method):
 
 def get_all_negative_schrodinger_eigen(g,V,sigma,numeigs, l=0):
     "Retourne la première positive si il n'y a pas de négative"
+    global lnumeigs
+    if not globals().has_key('lnumeigs'):
+        lnumeigs = {}
+
+    if lnumeigs.has_key(l):
+        numeigs = lnumeigs[l]
+
     w,v,needmore = get_schrodinger_eigen(g,V,sigma,numeigs,l,'eigsh')
     # w,v,needmore = get_schrodinger_eigen(g,V,sigma,numeigs,l,'eigsh')
     if needmore:
-        print numeigs, "valeurs propres pas suffisantes, je réessaie avec", numeigs*2
-        return get_all_negative_schrodinger_eigen(g,V,w[0],numeigs*2,l)
+        print numeigs, "valeurs propres pas suffisantes, je réessaie avec", numeigs+2
+        lnumeigs[l] = numeigs + 2
+        return get_all_negative_schrodinger_eigen(g,V,w[0],numeigs+2,l)
     if len(w) == 0:
         w = np.ones(1)
         v = np.zeros((g.N,1))
         return w,v
     elif w[0] > 0:
         return w[[0]], v[:,[0]]
+
+    lnumeigs[l] = len(w[w < 0]) + 1
         
     # print "Vp pour l=",l, ": ", w[w < 0], ", première positive", w[w>=0][0]
     print "Vp pour l=",l, ": ", w
@@ -106,7 +143,7 @@ def build_rho(g,V,gamma, sigmas=[-1], numeigs=4):
         newsigmas = sigmas
     else:
         # l > 0
-        if g.radial:
+        if g.radial and g.d != 1:
             l = 1
             while True:
                 #choix du shift
@@ -230,13 +267,14 @@ def scf(g,Vinit,gamma,maxiter,tol, sigma):
     for i in range(0,maxiter):
         print 'Itération %d' %(i+1)
         rho,eigs,psis,sigmas = build_rho(g,V,gamma,sigmas=sigmas)
+        print str(len(eigs)) + " bound states"
         V = build_V(g,rho,gamma)
         psiss.append(psis)
-        # if g.radial == False:
+        # if g.d == 1:
         #     V = translate(g,V)
         Vs.append(V)
         rhos.append(rho)
-        res = scipy.linalg.norm((Vs[len(Vs)-1] - Vs[len(Vs)-2])/(Vs[len(Vs)-1]))
+        res = scipy.linalg.norm((Vs[-1] - Vs[-2]))
 
         print "Résidu %s" %res
         C = sum(abs(eigs)**gamma) / classical_lt(gamma,g.d)
@@ -245,20 +283,32 @@ def scf(g,Vinit,gamma,maxiter,tol, sigma):
         print "deltaC", C - prevC
         if C - prevC < 0:
             print "ATTENTION, ENERGIE DECROISSANTE"
+            break
         elif np.abs(C - prevC) < tol:
             break
         prevC = sum(abs(eigs)**gamma) / classical_lt(gamma,g.d)
         print ''
 
+        if g.d == 1:
+            L = g.L/2
+        else:
+            L = g.L
+        ratio = L*np.sqrt(np.min(-eigs))
+        if ratio < 5:
+            print "ATTENTION, ratio à ", ratio
     return V,rho,eigs,Vs,rhos,psiss, np.array(Cs)
 
 def plot_radial(g,V):
     plot(g.onedgrid[g.N/2:],V.reshape(g.x.shape)[g.N/2,g.N/2:])
 
 def tridiag_to_banded(g,M):
-    ab = np.zeros((2, M.get_shape()[0]))
-    ab[0,:] = M[2,3]
-    ab[1,:] = M.diagonal()
+    Md = M.todia()
+    diag = Md.data[1,:]
+    offdiag = Md.data[0,:]
+    ab = np.zeros((3, M.get_shape()[0]))
+    ab[0,1:] = offdiag[:-1]
+    ab[1,:] = diag
+    ab[2,:] = offdiag
 
     return ab
 
@@ -277,6 +327,9 @@ def radial_stddev(g,V):
 
 def extrap(x, xp, yp):
     """np.interp function with linear extrapolation"""
+    if xp[-1] < xp[0]:
+        return extrap(x, xp[::-1], yp[::-1])
+    
     y = np.interp(x, xp, yp)
     y = np.where(x < xp[0], yp[0]+(x-xp[0])*(yp[0]-yp[1])/(xp[0]-xp[1]), y)
     y = np.where(x > xp[-1], yp[-1]+(x-xp[-1])*(yp[-1]-yp[-2])/(xp[-1]-xp[-2]), y)

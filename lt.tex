@@ -1,0 +1,610 @@
+\documentclass[10pt,a4paper,reqno]{amsart}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{common}
+\newcommand{\nor}{\gamma + \frac d 2}
+
+\begin{document}
+
+\title{Best constants in the Lieb-Thirring inequalities: a numerical
+  approach}
+\maketitle
+\tableofcontents
+\section{Introduction}
+In this paper we study the Lieb-Thirring family of inequalities: for
+any $d$-dimensional potential $V$ and nonnegative exponent $\gamma$,
+\begin{align}
+  \label{LT}
+  \tr((-\Delta + V)_{-}^{\gamma}) \leq L_{\gamma,d} \int V^{\gamma + \frac d 2}_{-},
+\end{align}
+where $V_{-} = \max(-V,0)$ is the negative part of $V$, and $((-\Delta
++ V)_{-}^{\gamma})$ is the $\gamma$-th power of the negative part of
+the operator $(-\Delta + V)$, as defined by the functional calculus.
+
+This inequality was originally used by Lieb and Thirring in the case
+$\gamma = 1, d = 3$ as an auxiliary step to prove the stability of
+fermionic matter\cite{lieb1975bound}. Its generalization has since
+then attracted a great deal of attention. Of particular interest are
+the values of $\gamma$ and $d$ for which this inequality holds, and
+the value of the optimal constants $L_{\gamma,d}$.
+
+It is easy to see that this bound cannot hold for $\gamma < 1/2$ when
+$d = 1$ by scaling, and $\gamma = 0$ when $d = 2$ (because any
+arbitrarily small potential in two dimension creates at least one
+bound state). The inequality was proved for $\gamma > 1/2$ in one
+dimension and $\gamma > 0$ in other dimensions in the original
+paper\cite{lieb1975bound}. The case $\gamma = 0, d \geq 3$ uses
+totally different methods and was proven independently by Cwikel, Lieb
+and Rosenblum\cite{cwikel1977weak,liebclr,rozenblum1972}. The limit
+case $\gamma = 1/2, d = 1$ remained unsolved for twenty years until it
+was finally settled by Weidl\cite{weidl1996}, who completed the last
+gap in the knowledge of the domain of validity of the Lieb-Thirring
+bound.
+
+Much less is known about the optimal values of the $L_{\gamma,d}$
+constants. A natural point of comparison is the semiclassical
+case. This regime is usually achieved by letting the Planck constant
+$\hbar$ tend to zero. In this paper, we have scaled $\hbar$ away from
+the equation for convenience, and the corresponding limit is a large
+(or extended) $V$. Using the Weyl asymptotics one can prove
+\begin{align*}
+  \lim\limits_{\mu \to \infty}\frac{\tr((-\Delta + \mu
+    V)_{-}^{\gamma})}{\int (\mu V)^{\gamma + \frac d 2}} =  L_{\gamma,d,\text{sc}},
+\end{align*}
+where
+\begin{align*}
+  L_{\gamma,d,\text{sc}} = 2^{-d} \pi^{-d/2}
+  \frac{\Gamma(\gamma+1)}{\Gamma(\gamma+\frac d 2 + 1)}.
+\end{align*}
+Therefore, we have $L_{\gamma,d} \geq L_{\gamma,d,\text{sc}}$, and we
+set $R_{\gamma,d} = \frac{L_{\gamma,d}}{L_{\gamma,d,\text{sc}}} \geq
+1$. This paper is a numerical exploration of $R_{\gamma,d}$, and aims
+to provide insight as to its behavior by trying to solve the
+variational problem
+\begin{align}
+  \tag{$P_{\gamma}$}
+  \label{variational}
+  R_{\gamma,d} = \frac 1 {L_{\gamma,d,\text{sc}}}\sup_{\int V^{\gamma + \frac d 2} = 1} \tr((-\Delta +
+    V)_{-}^{\gamma}),
+  \end{align}
+  where we impose the condition $\int V^{\gamma + \frac d 2} = 1$ to
+  eliminate the scaling invariance of the Lieb-Thirring inequality.
+
+  A scaling argument by Aizenman and Lieb \cite{aizenman1978semi}
+  shows that $R_{\gamma,d}$ is decreasing with respect to
+  $\gamma$. Furthermore, Laptev and Weidl
+  \cite{laptev2000gammathreehalves} showed that $R_{\gamma,d} = 1$ for
+  $\gamma \geq 3/2$, and Helffer and Robert \cite{helffer1990riesz}
+  proved that $R_{\gamma,d} > 1$ for $\gamma < 1$ by expanding
+  $\tr(-\Delta + V)_{-}^{\gamma}$ for the harmonic potential $V(x) = 1
+  - \abs{x}^{2}$ in the semiclassical limit.
+
+From these results, we can deduce that there exists a critical
+$\gamma_{c,d}$ with $1 \leq \gamma_{c,d} \leq \frac 3 2$ such
+that $R_{\gamma,d} > 1$ when $\gamma < \gamma_{c,d}$, and $R_{\gamma,d} =
+1$ when $\gamma \geq \gamma_{c,d}$. We now review available results
+about $\gamma_{c,d}$ in every dimension.
+
+\begin{enumerate}
+\item For $d = 1$, Lieb and Thirring solved a restricted version of
+  the variational problem \eqref{variational} where $V$ is only
+  allowed to have one bound state\cite{lieb1976bound}. They
+  proved that
+  \begin{align*}
+    R_{\gamma,1} \geq 2 \lp \frac{\gamma-1/2}{\gamma+1/2}\rp^{\gamma-1/2},
+  \end{align*}
+  which shows that $\gamma_{c,1} = \frac 3 2$. It is known that this
+  restricted problem provides the optimal constant for $\gamma = \frac
+  1 2$. It is however unknown but conjectured that this provides the
+  optimal $R_{\gamma,1}$ for $\frac 1 2 < \gamma \leq \frac 3 2 $.
+\item For $d = 2$, the same restricted variational problem was solved
+  numerically by Barnes in \cite{lieb1976bound}, producing a family of
+  solutions which show in particular that $\gamma_{c,2} \geq
+  1.165$. It is unknown if this branch of solutions provide the
+  optimal constant.
+\item For $d = 3$, the restricted variational problem only proves that
+  $\gamma_{c,3} \geq 0.862$, which does not improve the result of
+  Helffer and Robert that $\gamma_{c,3} \geq 1$. It is conjectured
+  in connection to the Thomas-Fermi theory that $\gamma_{c,3} = 1$,
+  which would improve a bound in the stability of quantum mechanical
+  matter, and is therefore of great importance.
+\item To our knowledge, nothing is known or conjectured about
+  $\gamma_{c}$ in higher dimension.
+\end{enumerate}
+
+In this paper, we describe an algorithm to find maximizers of the
+variational problem \eqref{variational}. We formulate this algorithm
+in the infinite dimensional case, and specialize it to the case where
+$V$ is radial. Then we discretize it, and use it to obtain numerical
+results.
+\section{The optimization algorithm}
+\subsection{Infinite-dimensional scheme}
+Let us denote $E(V) = \tr((-\Delta + V)_{-}^{\gamma})$, so that
+$L_{\gamma,d} = \sup_{\int V^{\gamma+\frac d 2} = 1} E(V)$. We seek an
+algorithm to solve this optimization problem.
+
+The algorithm is based on the following property:
+\begin{proposition}
+  For $\gamma \geq 1$,
+  \begin{align*}
+  E(V)^{1/\gamma} = \max_{\tau \geq 0, \norm{\tau}_{\gamma'} = 1} - \tr((-\Delta + V)\tau),
+\end{align*}
+where $\norm{\tau}_{\gamma'} = \lp\sum_{i}
+|\lambda_{i}|^{\gamma'}\rp^{1/\gamma'}$ is the Schatten norm of $\tau$
+with exponent $\gamma' = \frac {\gamma}{\gamma - 1}$, the Hölder
+conjugate of $\gamma$.
+\end{proposition}
+\begin{proof}
+  \begin{align*}
+    -\tr((-\Delta + V)\; \tau) &\leq \tr ((-\Delta + V)_{-} \;\tau)\\
+   &\leq \norm{(-\Delta + V)_{-}}_{\gamma} \norm{\tau}_{\gamma'}\\
+   &\leq \tr((-\Delta + V)_{-}^{\gamma})^{1/\gamma}\\
+   &\leq E(V)^{1/\gamma},
+ \end{align*}
+ and equality is achieved when
+ \begin{align}
+   \label{tau_V}
+   \tau = K_{\tau} (-\Delta + V)_{-}^{\gamma-1},
+ \end{align}
+ where $K_{\tau}$ is a normalization constant, chosen to ensure that
+ $\norm{\tau}_{\gamma'} = 1$.
+ 
+\end{proof}
+
+Therefore, when $\gamma \geq 1$,
+\begin{align*}
+  (L_{\gamma,d})^{1/\gamma} = \max_{\int V^{\gamma+\frac d 2} = 1, \tau \geq
+    0, \norm{\tau}_{\gamma'} = 1} -\tr ((-\Delta+V)\tau).
+\end{align*}
+
+What we gain from this formulation is that it is trivial to maximize
+this quantity with respect to $V$ and $\tau$ separately. Indeed, for a
+fixed $V$, the maximum with respect to $\tau$ is given by
+\eqref{tau_V}, and for a fixed $\tau$, the maximum with respect to $V$
+is given by
+\begin{align*}
+  V(x) = -K_{V} \tau(x,x)^{\frac 1 {\gamma + \frac d 2 - 1}},
+\end{align*}
+where  $K_{V}$ is a normalization parameter chosen to ensure that $\int
+V^{\gamma + \frac d 2} = 1$, and $\tau(x,y)$ is the integral kernel of
+$\tau$.
+
+This suggests the following alternate maximization scheme: from an
+approximate maximum $V_{n}$, set $\tau_{n} = K_{\tau} (-\Delta +
+V)_{-}^{\gamma-1}$, $V_{n+1}(x) = -K_{V} \tau_{n}(x,x)^{\frac 1
+  {\gamma + \frac d 2 - 1}}$, and iterate. By construction, this
+ensures that
+\begin{align*}
+  E(V_{n+1})^{1/\gamma} &= - \tr((-\Delta+V_{n+1}) \tau_{n+1})\\
+  &\geq -\tr((-\Delta+V_{n}) \tau_{n+1})\\
+  &\geq -\tr((-\Delta+V_{n}) \tau_n)\\
+  &= E(V_{n})^{1/\gamma}
+\end{align*}
+
+Therefore, the sequence $E(V_{n})$ is increasing, and since it is
+bounded from above, converges. In general though, we are unable to
+prove the convergence of $V_{n}$.
+
+Note that, even though the scheme was derived for $\gamma \geq 1$, it
+remains a valid algorithm when $\gamma < 1$. In this regime, though,
+the monotonicity property is not guaranteed, and indeed was found to
+be false in numerical computations.
+
+This algorithm can also be seen as a fixed-point algorithm to find the
+critical points of the maximization problem. Indeed, these are
+precisely the solutions of
+\begin{align*}
+  V(x) = -K_{V} (-\Delta+V)_{-}(x,x)^{\frac 1 {\gamma + \frac d 2 - 1}},
+\end{align*}
+This is a self-consistent set of equations similar to systems such as
+the Hartree-Fock equations of quantum chemistry. Our algorithm is
+similar in spirit to the Roothaan method\cite{roothaan1951}. However,
+in our case, at least for $\gamma \geq 1$, the scheme monotonically
+increases the objective function, therefore forbidding the
+oscillations seen in the Roothaan algorithm. Even for $\gamma < 1,$ we
+did not see any such oscillations numerically, and always observed
+linear convergence (\ie $\norm{V_{n} - V_{\infty}} \leq \nu^{n}$), or
+slow separation of bumps, as will be discussed in Section
+\ref{numres}.
+
+
+\subsection{Radial algorithm}
+The iteration described above can be written more explicitely:
+\begin{enumerate}
+\item Compute the negative eigenvectors $\psi_{i}$ and eigenvalues
+  $\lambda_{i}$ of $-\Delta + V_{n}$
+\item Set $\rho_{n} = \sum_{i} (-\lambda_{i})^{\gamma-1} \psi_{i}^{2}$
+\item Compute $K_{V} = \norm{\rho_{n}^{\frac 1 {\gamma + \frac d 2 - 1}}}_{\gamma+\frac d 2}$
+\item Set $V_{n+1} = - K_{V} \rho_{n}^{\frac 1 {\gamma + \frac d 2 - 1}}$
+\end{enumerate}
+
+Most of our multidimensional computations were done in a radial
+setting. To see why this is appropriate, consider the above iteration
+for $d \geq 2$, when $V_{n}$ is radial. Then, the Laplacian splits
+into $\Delta_{r} + \Delta_{\theta}$, where $\Delta_{r}$ and
+$\Delta_{\theta}$ are respectively the radial and orthoradial parts of
+the Laplacian. The eigenvectors of $\Delta_{\theta}$ are explicitely
+known to be the functions whose orthoradial part are the spherical
+harmonics, labelled by the integer $l$. Since $V_{n}$ is radial,
+$-\Delta_{r} + V_{n}$ commutes with $\Delta_{\theta}$ and can
+therefore be diagonalized in this basis (separation of variables). We
+write these eigenvectors of the form $\psi_{i,l}(x) = \phi_{i,l}(\abs
+x) J_{l,m}(x/\abs x)$, where $J_{l,m}$ is the spherical harmonics of
+degree $l$ and order $m$. The radial parts $\phi_{i,l}$ satisfy the
+equation
+\begin{align}
+  \label{eigen_l}
+  - \frac 1 {r^{d-1}} (r^{d-1} \phi_{i,l}')' + \frac{l(l+d-2)}{r^{2}}\phi_{i,l} +
+  V \phi_{i,l} = \lambda_{i,l} \phi_{i,l}
+\end{align}
+and each $\phi_{i,l}$ has multiplicity\cite{seto1974}
+\begin{align*}
+  h(d,l) = \frac{(2l+d-2)\Gamma(d+l-2)}{\Gamma(d-1)\Gamma(l+1)}
+\end{align*}
+
+Therefore, we can obtain all the negative eigenvectors and eigenvalues
+by solving only \eqref{eigen_l}. Furthermore, since the lowest
+eigenvalue decreases as $l$ increases, we can iterate over $l$ and
+stop whenever the lowest eigenvalue becomes positive. Next, we compute
+\begin{align*}
+  \rho_{n}(x) &= \sum_{l} \sum_{i} \sum_{m} (-\lambda_{i,l})^{\gamma-1}
+  \phi_{i,l}^{2}(r) J_{l,m}^{2}(x/r)^{2}\\
+  &= \sum_{l} \sum_{i} h(d,l) (-\lambda_{i,l})^{\gamma-1} \phi_{i,l}^{2}(r)
+\end{align*}
+where the sum only ranges over all negative eigenvalues. This is again
+radial, and therefore so is $V_{n+1}$. The radial algorithm is therefore:
+
+\begin{enumerate}
+\item Compute the negative eigenvectors $\phi_{i,l}$ and eigenvalues
+  $\lambda_{i,l}$ of \eqref{eigen_l} by looping over $l$ until the
+  lowest eigenvalue becomes positive
+\item Set $\rho_{n} = \sum_{l} \sum_{i} h(d,l)
+  (-\lambda_{i,l})^{\gamma-1} \phi_{i,l}^{2}$
+\item Compute $K_{V} = \norm{\rho_{n}^{\frac 1 {\gamma + \frac d 2 - 1}}}_{\gamma+\frac d 2}$
+\item Set $V_{n+1} = - K_{V} \rho_{n}^{\frac 1 {\gamma + \frac d 2 - 1}}$
+\end{enumerate}
+
+Note that this algorithm is not an approximation, but an exact
+simplification of the general algorithm for the case where $V_{0}$ is
+radial.
+\section{Discretization}
+\subsection{Galerkin basis and weak formulation}
+To discretize this algorithm, we use a Galerkin basis on which we
+expand $V$ and the eigenvectors. This discretization is variational at
+two levels. First, the choice of eigenvectors is restricted to a
+finite-dimensional subspace. By the minmax principle, this leads to
+overestimation of the eigenvalues and therefore underestimation of
+$E(V)$ for a given $V$. Second, the choice of potentials $V$ is also
+restricted, decreasing $\max_{\int V^{\gamma+\frac d 2} = 1}
+E(V)$.
+
+This property has the advantage that numerical examples can provide
+lower bounds on the best constants for the Lieb-Thirring inequality,
+with machine precision as the only source of errors. A disadvantage is
+that the algorithm we use involves taking powers of functions, and
+there is no natural way to do that in a Galerkin basis, and therefore
+a loss of accuracy can occur at this step.
+
+To use our Galerkin basis, we introduce a weak form of
+\eqref{eigen_l}. There are several possibilities here. The simplest is
+to use a change of variable $\varphi(r) = r^{\frac{d-1}2} \phi(r)$
+to transform the equation back to the more standard form
+\begin{align*}
+  - \varphi'' + \frac {(l-\frac{d-1}{2})(l+\frac{d-3}{2})}{r^{2}}
+\varphi + V(r)\varphi = \lambda \varphi.
+\end{align*}
+
+We obtain a weak form by multiplying by a test function $u$ and
+integrating: for all $u$, 
+\begin{align}
+  \label{eigen_l_weak_bad}
+  \int\left[ \phi' u' + \lp\frac {(l-\frac{d-1}{2})(l+\frac{d-3}{2})}{r^{2}}
+    + V\rp \phi u\right] = \lambda \int \phi u
+\end{align}
+
+Expanding on a Galerkin basis $(\chi_{i})_{i=1\dots N}$, this problem transforms to
+the matrix equation
+\begin{align*}
+  A x = \lambda M x,
+\end{align*}
+where $A_{ij} = \int \chi_{i}' \chi_{j}' +
+\lp\frac{(l-\frac{d-1}{2})(l+\frac{d-3}{2})}{r^{2}} + V\rp\chi_{i} \chi_{j}$ is the
+stiffness matrix, and $M_{ij} = \int \chi_{i} \chi_{j}$ is the mass
+matrix.
+
+When $V$ is expanded on this same basis, we can easily compute the
+matrix elements, solve this eigenvalue problem, and transform back to
+$\phi$. However, for $d = 2, l = 0$, $\varphi$ behaves like $\sqrt r$
+at $0$, and this singularity of the derivative forbids an accurate
+discretization.
+
+Another possibility is to obtain a weak formulation of \eqref{eigen_l}
+directly. We have to remember that since the $\phi$ functions are only
+radial parts of a $d$-dimensional function, the $L^{2}$ inner product
+between two functions $\phi_{1}$ and $\phi_{2}$ is $\int \phi_{1}
+\phi_{2} r^{d-1}$. This has to be taken into account in the weak
+formulation in order to obtain a self-adjoint equation. Multiplying
+\eqref{eigen_l} by $r^{d-1} u$, where $u$ is a test function, and
+integrating by parts, we obtain : for all $u$,
+\begin{align}
+  \label{eigen_l_weak}
+  \int\left[ r^{d-1} \phi' u' + \lp\frac{l(l+d-2)}{r^{2}} + V\rp r^{d-1}\phi u\right] = \lambda \int r^{d-1}\phi u
+\end{align}
+
+Then, as with \eqref{eigen_l_weak_bad}, we can transform this into a
+matrix equation and solve it. The disadvantage is that the
+integrations required for the assembly step are more involved, and
+therefore we only use it for the case $d = 2, l = 0$ where the other
+method fails.
+
+\subsection{Finite elements}
+We use a Finite Element basis of piecewise linear functions on a grid
+of $[0,L]$. The grid was chosen nonuniform, with more points around
+$0$, to accomodate the singularity of \eqref{eigen_l}. $L$ should be
+chosen large enough that all the eigenvectors associated to negative
+eigenvalues of $\Delta + V$ can be represented accurately. If $\psi$
+is an eigenvector with negative eigenvalue $\lambda$, then, assuming
+$V$ has fast enough decay, $\psi$ decays as $\exp(-\sqrt{-\lambda}
+r)$. This shows that the discretization is problematic for eigenvalues
+close to zero, as we shall see in Section \ref{numres}.
+
+For our piecewise linear basis functions, it is easy to compute the
+matrix elements when $V_{n}$ is expanded on this same basis. We then
+solve the eigenproblem, and obtain the eigenvectors. To expand
+$\rho^{\frac 1 {\gamma + \frac d 2 - 1}}$ on the basis, we simply
+chose the expansion that is exact on the grid points. Then the
+normalization can be performed exactly, and the iteration is carried
+out.
+
+\begin{figure}[H]
+  \centering
+  \scalebox{0.4}{ \includegraphics{plots/conv_N.pdf} \includegraphics{plots/conv_L.pdf}}
+  \caption{Slope on the left : $-1.043$, $-1.999$. On the right, eigenfunctions
+    with slope $- 0.5285 \approx \sqrt(-\lambda) = -0.5283$. Then, saturation when
+    the error in $N$ becomes larger than the error in $L$. Right curve
+  with constant step}
+  \label{fig:conv_NL}
+\end{figure}
+
+\subsection{Diagonalization}
+The most computationally challenging step in our algorithm is the
+problem of computing the negative eigenvalues and associated
+eigenvectors of a generalised eigenvalue problem $A x = M x$, where
+$A$ and $M$ are large sparse symmetric matrices. This can be done by
+standard packages such as ARPACK\cite{lehoucq1998arpack}, which allows
+one to compute the $N$ lowest eigenvalues. There are two problems with
+this. First, finding the lowest eigenvalues of a matrix is numerically
+difficult, and one has to use a technique such as the shift-and-invert
+transformation to ``zoom in'' on the required eigenvalues. Second, one
+also needs to accurately determine the lowest positive eigenvalue, to
+ensure it is not negative. Since the spectrum is an approximation to
+the spectrum of $-\Delta + V$, we expect a large number of eigenvalues
+close to zero, corresponding to small-frequency Fourier
+modes. Therefore, the group of eigenvalues one needs to locate (all
+the negative eigenvalues plus the first positive one) is not
+clustered, which leads to slow convergence of eigenvalue solvers.
+
+\subsection{Implementation}
+We implemented the algorithm in Python, using the Numpy/Scipy
+libraries\cite{scipy}. We used the ARPACK eigenvalue
+solver\cite{lehoucq1998arpack}. The code is available at
+\todo{Publier le code ?}
+\section{Numerical results}
+\label{numres}
+We used the algorithm described above to compute critical points of
+the variational problem. Our strategy was to find a critical point by
+running the algorithm on a suitable initial potential $V_{0}$ (for
+instance, a Gaussian of specified width). Once convergence is achieved
+for a specific $\gamma$, we can run the algorithm for $\gamma + \eps$,
+using as initial potential the one found for $\gamma$.
+
+\subsection{The case $d = 1$}
+In one dimension we simply used a grid of size $[-L,L]$ with Dirichlet
+boundary conditions. We reproduced the potential with one bound state
+of \cite{lieb1976bound} by using for $V_{0}$ a Gaussian of small
+width. In this case, the algorithm converges linearly (\ie $\norm{V_{n+1} -
+V_{n}} \approx \nu^{n}$, for some convergence rate  $\nu < 1$), and very
+quickly (about twenty iterations to achieve machine precision).
+
+Countrary to what we will observe in higher dimensions, increasing the
+size of the initial Gaussian did not make the algorithm converge to
+other critical points. Instead, it leads to a slow divergence where
+``bumps'' separate, each bump corresponding to the potential of
+\cite{lieb1976bound}. Furthermore, we numerically checked that the
+convergence of $E(V_{n})$ towards its limit is sublinear, \ie
+\begin{align*}
+  E(V_{n}) - E^{\infty} \approx K e^{- \alpha \log n}.
+\end{align*}
+Assuming for simplicity a potential $V_{n}$ consisting of two bumps
+separated by a length $L_{n}$, then, because of the exponential
+localization of the bumps, the error $E(V_{n}) - E^{\infty} \approx K'
+e^{- \alpha' L_{n}}.$ Therefore, the sublinear convergence is
+consistent with a logarithmic divergence of bumps. An analytic
+explanation of this is an interesting open question.
+\todo{Plot ? Convergence ? Bumps ?}
+
+Based on these results, we conjecture that the potential with only one
+bound state is, up to translation, the only maximizer of the
+functional. This would imply that $R_{\gamma,1} = 2 \lp
+\frac{\gamma-1/2}{\gamma+1/2}\rp^{\gamma-1/2}$.
+
+\subsection{Heuristique foireuse}
+\todo{Essayer de tirer quelque chose de ça, ou abandonner}
+
+Let us try to understand why $L_{n}$ diverges
+logarithmically. Consider a potential $V_{n} = V_{1} + V_{2}$ composed
+of two ``self-consistent'' bumps with distance $L_{n}$, with only one
+bound state each, $\phi_{1}$ and $\phi_{2}$. When $L_{n}$ is infinite,
+$V$ has two bound states $\phi_{1}$ and $\phi_{2}$, with same negative
+eigenvalue $\lambda$. When $L$ is finite but large, perturbation
+theory tells us that we have to seek the new eigenvectors as linear
+combinations of $\phi_{1}$ and $\phi_{2}$, maybe. We set $\eps = \int
+\phi_{1} \phi_{2}$. For $\gamma < 3/2$, $V$ decays faster than $\phi$,
+and, to first order in $\eps$, the Hamiltonian matrix in the basis
+$\phi_{1}, \phi_{2}$ is of the form
+\begin{align*}
+  \mat{\lambda + o(\eps)&\lambda b\\\lambda b&\lambda + o(\eps)},
+\end{align*}
+where
+\begin{align*}
+  \lambda b &= \lela \phi_{1}, (-\Delta + V_{1} + V_{2})
+  \phi_{2}\rira\\
+  &= 2 \lambda - \lela \phi'_{1}, \phi'_{2}\rira
+\end{align*}
+
+
+The new eigenvectors are
+$\psi_{\pm} = \phi_{1} \pm \phi_{2}$ with eigenvalues $\lambda_{\pm} =
+\lambda (1\pm\eps)$ (confirmed numerically), propertly normalized:
+$\psi_{\pm} = K(\phi_{1}\pm\phi_{2})(1\mp \frac 1 4 \eps)$, $K$ constant.
+
+Then, up to normalization
+\begin{align*}
+  \rho_{n} &= (-\lambda_{+})^{\gamma-1} \psi_{+}^{2} +
+  (-\lambda_{-})^{\gamma-1} \psi_{-}^{2}\\
+  &= (-\lambda)^{\gamma-1}\left[(\psi_{+}^{2} + \psi_{-}^{2}) +
+  -\eps \phi_{1} \phi_{2} + (\gamma-1)\eps (\psi_{+}^{2} -
+  \psi_{-}^{2})\right] + o(\eps)\\
+&= 2(-\lambda)^{\gamma-1}\left[\phi_1^{2} + \phi_2^{2} -
+  \eps (3/2-\gamma) \phi_{1} \phi_{2}\right] + o(\eps)
+\end{align*}
+$V_{n+1}$ will have the shape of
+\begin{align*}
+  \phi_{1}^{2} + \phi_{2}^{2} - K \eps \phi_{1} \phi_{2}
+  &= (\phi_{1} - \frac 1 2 K \eps \phi_{2})^{2} + (1 - \frac 1 4 K^{2}
+  \eps^{2})\phi_{2}^{2},
+\end{align*}
+$K = 3/2 - \eps > 0$
+
+Neglecting the second term (?), assuming wlog that the maximum of
+$\phi_{1}$ is at zero, the maximum is achieved when
+\begin{align*}
+  \phi_{1}'(x) &= - \frac 1 2 K \eps \\
+  \phi_{1}''(0) x &= - \frac 1 2 K  \eps \phi_{2}'(0)
+\end{align*}
+Therefore, 
+\begin{align*}
+  L_{n+1} \approx L_{n} + K' e^{-2\alpha L_{n}},
+\end{align*}
+where $K'$ is a positive quantity. The equation matches
+\begin{align*}
+  L_{n} = L_{1} +  \frac 1 {2\alpha} \log n
+\end{align*}
+
+This is confirmed by a numerical fit.
+
+\subsection{The case $d = 2$}
+Due to the high cost of accurately solving the maximization problem in
+more than one dimension, we only obtained partial results in the
+non-radial $2D$ case. The results we obtained indicate that the
+algorithm either converges to radial critical points, or form slowly
+separating bumps, as in one dimension. We have been unable to find any
+examples of non-radial critical points, although this does not mean
+that they don't exist.
+
+In the radial case, we followed branches of critical points of
+\eqref{variational} using the following method. First, we obtain a
+critical point of $P_{\gamma_{0}},$ for some given $\gamma_{0}$. This
+is done by the algorithm described previously, with as initial guess a
+normalized gaussian of prescribed width, wich we vary between
+runs. Then, once we obtain a critical point $V_{\gamma_{0}}$, we can
+use it as an initial guess to find a critical point at $\gamma =
+\gamma_{0} + \Delta \gamma$, where $\Delta \gamma$ is a small
+increment. Iterating, we follow a branch of critical points of the
+maximization problem \eqref{variational}. This procedure is
+mathematically sound away from bifurcations. We have been unable to
+complete an analysis of bifurcations, for instance using the implicit
+function theorem. However, we have identified cases where the branch
+following procedure described above gains a new bound state, which
+causes discontinuities, at least in the discrete setting, as
+illustrated \figref{fig:bifur}.
+
+\begin{figure}[H]
+  \centering
+  \scalebox{0.4}{ \includegraphics{plots/bifur_R.pdf}\includegraphics{plots/bifur_V.pdf}}
+  \caption{The branch with three bound states gains a new bound state
+    with $l = 0$ as $\gamma$ increases. This introduces a
+    discontinuity in the solution branch, and results in a longer
+    decay. This effect depends on the precise moment where an
+    eigenvalue crosses the zero threshold, and is therefore highly
+    dependent on the domain size and discretization.}
+  \label{fig:bifur}
+\end{figure}
+
+Except at these bifurcation points, we found this branch continuation
+procedure robust, as long as the step $\Delta \gamma$ is small
+enough. By varying the shape of the initial data, and in particular
+its width, we were able to obtain different branches of critical
+points. Generally speaking, as the width of the initial guess
+increases, the number of negative eigenvalues of $-\Delta + V$
+increases. By increasing the width of the initial guess, we obtain
+branches with an increasingly large number of eigenvalues.
+
+We represent the energy of these branches as a function of $\gamma$
+\figref{fig:2D}. We label them by the number of negative eigenvalues
+they have. In case of a change in the number of negative eigenvalues,
+such as in \figref{fig:bifur}, we label the branch by the highest
+number of negative eigenvalues.
+
+\begin{figure}[H]
+  \centering
+  \scalebox{0.8}{ \includegraphics{plots/2D_R.pdf}}
+  \caption{Blabla}
+  \label{fig:2D}
+\end{figure}
+
+First, we see that as the number of eigenvalues increases,
+$R(V_{\gamma})$ tends to $1$. This is in accordance with the
+semiclassical limit. For a given $\gamma$, the Lieb-Thirring constant
+will be given by the supremum of $R(V\gamma)$ over such curves. From
+the branches depicted here, we see that the supremum is always given
+by either the first curve with only one bound state for $\gamma <
+\gamma_{c}^{1} \approx 1.16$, and by the semiclassical limit for
+$\gamma > \gamma_{c}^{1}$. All the other curves are below these two
+(although not depicted in this zoomed plot, this holds true for $0.5 <
+\gamma 1.5$).
+
+Based on our numerical results, we conjecture that $\gamma_{c} =
+\gamma_{c}^{1} \approx 1.16$. The only way this could not be true is
+if some other curve is above the one with one bound state. We have not
+been able to find such a curve.
+
+\subsection{The case $d = 3$}
+We use the same method in dimension 3. Contrary to the dimension 2,
+here some potentials with a higher number of bound states have a
+higher $R$ than the one with only one bound state. The corresponding
+curves in the $\gamma - R$ plane are flatter and flatter, and
+intersect at a sequence of increasing $\gamma_{c}^{k}$. This sequence
+accumulates at $1$ : this is a consequence of Helffer and Robert's
+result\cite{helffer1990riesz}, wich predicts the existence of similar
+potentials with a $R$ larger than $1$ for every $\gamma < 1$ in the
+nearly semiclassical regime, with a highly oscillatory behavior of $R$
+with respect to the width of the potential. Although our numerical
+methods do not permit us to investigate this regime (it would require
+a very large domain size, with a correspondingly large number of
+points, and a very poor conditioning of the eigenvalue problem), we
+expect the same behavior to occur.
+
+Also in contrast to the case $d = 2$, the slope is not monotonic with
+respect to the number of bound state, reflecting a greater variety in
+the energy landscape.
+
+\begin{figure}[H]
+  \centering
+  \scalebox{0.8}{ \includegraphics{plots/3D_R.pdf}}
+  \caption{Blabla}
+  \label{fig:3D}
+\end{figure}
+\subsection{The case $d \geq 4$}
+The case $d \geq 4$ is similar to the case $d = 3$, with a branch with
+one bound state as the maximizer for small $\gamma$, until it is
+outperformed by branches with a larger number of bound states, which
+all fall under the semiclassical limit before $\gamma = 1$.
+\section{Conclusion}
+
+\section*{Acknowledgements}
+\bibliographystyle{plain}
+\bibliography{../refs_lt.bib}
+
+\end{document}

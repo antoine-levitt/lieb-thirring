@@ -30,11 +30,18 @@ class Grid:
                 x.sort()
             self.N = len(x)
             N = self.N
+
+        if d==1:
+            x = np.linspace(-L/2,L/2,N)
         
-        #deltai = xi - xi-1
         self.deltam = np.zeros_like(x)
-        self.deltam[0] = x[0]
         self.deltam[1:] = x[1:] - x[:-1]
+        # cas particulier d = 1
+        if d == 1:
+            self.deltam[0] = self.deltam[1]
+        else:
+            self.deltam[0] = x[0]
+
 
         self.deltap = np.zeros_like(self.deltam)
         self.deltap[:-1]= self.deltam[1:]
@@ -46,7 +53,10 @@ class Grid:
         self.method = 'fe'
 
         self.x = x
-        self.ds = functions.surf_nsphere(d) * x**(d-1)
+        if d == 1:
+            self.ds = np.ones_like(x)
+        else:
+            self.ds = functions.surf_nsphere(d) * x**(d-1)
 
     def fem_params(self,l):
         # return {'phi': True, 'weight': False, 'fd':False}
@@ -177,17 +187,17 @@ class Grid:
             
                 return functions.tridiag(self.N,offdiag,diag,offdiag)
 
-    def fem_overxsquare_op(self):
-        x = self.x
+    # def fem_overxsquare_op(self):
+    #     x = self.x
 
-        settings = np.geterrobj()
-        np.seterr(all='ignore')
-        diag = (2 * np.log((x - self.deltam)) * (x ** 2) - 2 * np.log((x - self.deltam)) * self.deltam * x + (2 * x * self.deltam) - (self.deltam ** 2) - 2 * np.log(x) * (x ** 2) + 2 * np.log(x) * self.deltam * x) / (self.deltam ** 2) / x
-        diag[0] = ((2 * x[0] * self.deltam[0]) - (self.deltam[0] ** 2) - 2 * np.log(x[0]) * (x[0] ** 2) + 2 * np.log(x[0]) * self.deltam[0] * x[0]) / (self.deltam[0] ** 2) / x[0]
-        np.seterrobj(settings)
+    #     settings = np.geterrobj()
+    #     np.seterr(all='ignore')
+    #     diag = (2 * np.log((x - self.deltam)) * (x ** 2) - 2 * np.log((x - self.deltam)) * self.deltam * x + (2 * x * self.deltam) - (self.deltam ** 2) - 2 * np.log(x) * (x ** 2) + 2 * np.log(x) * self.deltam * x) / (self.deltam ** 2) / x
+    #     diag[0] = ((2 * x[0] * self.deltam[0]) - (self.deltam[0] ** 2) - 2 * np.log(x[0]) * (x[0] ** 2) + 2 * np.log(x[0]) * self.deltam[0] * x[0]) / (self.deltam[0] ** 2) / x[0]
+    #     np.seterrobj(settings)
         
-        diag+= ((2 * x * self.deltap) + (self.deltap ** 2) + 2 * np.log(x) * self.deltap * x + 2 * np.log(x) * (x ** 2) - 2 * np.log((x + self.deltap)) * (x ** 2) - 2 * np.log((x + self.deltap)) * x * self.deltap) / (self.deltap ** 2) / x;
+    #     diag+= ((2 * x * self.deltap) + (self.deltap ** 2) + 2 * np.log(x) * self.deltap * x + 2 * np.log(x) * (x ** 2) - 2 * np.log((x + self.deltap)) * (x ** 2) - 2 * np.log((x + self.deltap)) * x * self.deltap) / (self.deltap ** 2) / x;
 
-        offdiag =  - ((2 * self.deltap) + np.log(x) * self.deltap + 2 * np.log(x) * x - 2 * np.log((x + self.deltap)) * x - np.log((x + self.deltap)) * self.deltap) / (self.deltap ** 2);
+    #     offdiag =  - ((2 * self.deltap) + np.log(x) * self.deltap + 2 * np.log(x) * x - 2 * np.log((x + self.deltap)) * x - np.log((x + self.deltap)) * self.deltap) / (self.deltap ** 2);
     
-        return functions.tridiag(self.N,offdiag,diag,offdiag)
+    #     return functions.tridiag(self.N,offdiag,diag,offdiag)
